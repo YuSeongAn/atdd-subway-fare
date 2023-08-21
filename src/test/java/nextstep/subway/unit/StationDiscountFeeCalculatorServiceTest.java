@@ -2,16 +2,20 @@ package nextstep.subway.unit;
 
 import nextstep.member.domain.Member;
 import nextstep.member.fixture.MemberSpec;
+import nextstep.subway.domain.service.fee.AbstractStationPathDiscountFeeCalculator;
 import nextstep.subway.domain.service.fee.StationPathDiscountFeeContext;
-import nextstep.subway.domain.service.fee.UserAgeDiscountFeeCalculator;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 
+@SpringBootTest
 public class StationDiscountFeeCalculatorServiceTest {
-    private UserAgeDiscountFeeCalculator userAgeDiscountFeeCalculator = new UserAgeDiscountFeeCalculator();
+    @Autowired
+    private AbstractStationPathDiscountFeeCalculator discountFeeCalculator;
 
     @DisplayName("청소년 할인 적용된 요금 계산")
     @Test
@@ -21,11 +25,12 @@ public class StationDiscountFeeCalculatorServiceTest {
         final Member member = MemberSpec.of("TEST@nextstep.com", 18);
 
         final StationPathDiscountFeeContext context = StationPathDiscountFeeContext.builder()
+                .totalFee(totalFee)
                 .member(member)
                 .build();
 
         //when
-        final BigDecimal discountFee = userAgeDiscountFeeCalculator.calculateDiscountFee(totalFee, context);
+        final BigDecimal discountFee = discountFeeCalculator.calculateTotalDiscountFee(context);
 
         //then
         final BigDecimal twentyPercent = BigDecimal.valueOf(0.2);
@@ -42,11 +47,12 @@ public class StationDiscountFeeCalculatorServiceTest {
         final Member member = MemberSpec.of("TEST@nextstep.com", 6);
 
         final StationPathDiscountFeeContext context = StationPathDiscountFeeContext.builder()
+                .totalFee(totalFee)
                 .member(member)
                 .build();
 
         //when
-        final BigDecimal discountFee = userAgeDiscountFeeCalculator.calculateDiscountFee(totalFee, context);
+        final BigDecimal discountFee = discountFeeCalculator.calculateTotalDiscountFee(context);
 
         //then
         final BigDecimal fiftyPercent = BigDecimal.valueOf(0.5);

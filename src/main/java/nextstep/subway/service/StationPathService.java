@@ -4,9 +4,9 @@ import lombok.RequiredArgsConstructor;
 import nextstep.member.domain.MemberRepository;
 import nextstep.subway.domain.Station;
 import nextstep.subway.domain.repository.StationRepository;
+import nextstep.subway.domain.service.fee.AbstractStationPathDiscountFeeCalculator;
 import nextstep.subway.domain.service.fee.StationFeeCalculateService;
 import nextstep.subway.domain.service.fee.StationPathDiscountFeeContext;
-import nextstep.subway.domain.service.fee.UserAgeDiscountFeeCalculator;
 import nextstep.subway.domain.service.path.StationPathAccumulateService;
 import nextstep.subway.domain.service.path.StationPathSearchRequestType;
 import nextstep.subway.domain.service.path.StationShortestPathCalculateService;
@@ -29,7 +29,7 @@ public class StationPathService {
     private final StationShortestPathCalculateService stationShortestPathCalculateService;
     private final StationPathAccumulateService stationPathAccumulateService;
     private final StationFeeCalculateService stationFeeCalculateService;
-    private final UserAgeDiscountFeeCalculator userAgeDiscountFeeCalculator;
+    private final AbstractStationPathDiscountFeeCalculator stationPathDiscountFeeCalculator;
     private final MemberRepository memberRepository;
 
     @Transactional(readOnly = true)
@@ -76,7 +76,8 @@ public class StationPathService {
         final BigDecimal fee = stationFeeCalculateService.calculateFee(distance, pathStationIds);
 
         return memberRepository.findByEmail(email)
-                .map(member -> userAgeDiscountFeeCalculator.calculateDiscountFee(fee, StationPathDiscountFeeContext.builder()
+                .map(member -> stationPathDiscountFeeCalculator.calculateTotalDiscountFee(StationPathDiscountFeeContext.builder()
+                        .totalFee(fee)
                         .member(member)
                         .build()))
                 .map(fee::subtract)
